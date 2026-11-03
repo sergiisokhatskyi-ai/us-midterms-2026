@@ -1,0 +1,35 @@
+name: Publish election dashboard
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+  schedule:
+    # UTC. GitHub may delay scheduled workflows; interval is not a real-time SLA.
+    - cron: '7-59/5 * * * *'
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+concurrency:
+  group: github-pages
+  cancel-in-progress: false
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout site
+        uses: actions/checkout@v4
+      - name: Refresh election results from open feed
+        run: python3 scripts/refresh.py
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+      - name: Upload static site
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: .
+      - name: Publish Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
