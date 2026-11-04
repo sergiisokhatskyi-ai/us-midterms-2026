@@ -22,8 +22,9 @@ function esc(x){return String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&l
 function arr(x){if(Array.isArray(x))return x;try{let a=JSON.parse(x);return Array.isArray(a)?a:[]}catch{return []}}
 function yes(m){const outcomes=arr(m.outcomes),prices=arr(m.outcomePrices);let ix=outcomes.findIndex(v=>String(v).toLowerCase()==='yes');if(ix<0)return null;const v=Number(prices[ix]);return Number.isFinite(v)&&v>=0&&v<=1?v*100:null}
 function name(m){return String(m.groupItemTitle||m.question||'').trim()}
-function odds(v){return v===null||v===undefined?'—':v<1?'<1%':v>=99.5?'>99%':v.toFixed(v<10?1:0).replace('.',',')+'%'}
-function time(x){const d=new Date(x);return Number.isFinite(d.getTime())?new Intl.DateTimeFormat('ru-RU',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit',timeZone:'Europe/London'}).format(d)+' UK':'время не указано'}
+const locale=()=>({uk:'uk-UA',ru:'ru-RU',en:'en-GB'}[document.documentElement.lang]||'en-GB');
+function odds(v){return v===null||v===undefined?'—':v<1?'<1%':v>=99.5?'>99%':new Intl.NumberFormat(locale(),{minimumFractionDigits:v<10?1:0,maximumFractionDigits:v<10?1:0}).format(v)+'%'}
+function time(x){const d=new Date(x);return Number.isFinite(d.getTime())?new Intl.DateTimeFormat(locale(),{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit',timeZone:'Europe/London'}).format(d)+' UK':'время не указано'}
 function valid(obj,slug){return obj&&obj.slug===slug&&Array.isArray(obj.markets)&&obj.markets.length}
 function party(ms,code){const rx=code==='D'?/democratic party|democrats\b|\(d\)/i:/republican party|republicans\b|\(r\)/i;for(const m of ms){const s=name(m)+' '+String(m.question||'');if(rx.test(s)&&yes(m)!=null)return yes(m)}return null}
 function market(cfgItem){return 'https://polymarket.com/event/'+cfgItem[2]}
@@ -55,6 +56,7 @@ async function update(){if(busy)return;busy=true;lastCheck=Date.now();$('pmStatu
 const statuses=await Promise.all(cfg.map(async c=>{try{const ev=await fetchJSON('https://gamma-api.polymarket.com/events/slug/'+encodeURIComponent(c[2]),12000);if(!valid(ev,c[2]))return false;events.set(c[2],ev);render();return true}catch{return false}}));
 liveCount=statuses.filter(Boolean).length;busy=false;if(liveCount<cfg.length)await mirror();render();
 }
+window.addEventListener('dashboard:languagechange',render);
 $('pmRefresh').addEventListener('click',update);
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&Date.now()-lastCheck>90000)update()});
 window.addEventListener('pageshow',e=>{if(e.persisted&&Date.now()-lastCheck>90000)update()});
