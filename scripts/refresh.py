@@ -12,7 +12,6 @@ DATA = ROOT / "data"
 DATA.mkdir(exist_ok=True)
 
 SOURCES = (
-    ("results.json", "https://thepeoplestally.com/data/results.json"),
     ("live.json", "https://thepeoplestally.com/api/live"),
     ("early_votes.json", "https://thepeoplestally.com/data/early_votes.json"),
 )
@@ -20,8 +19,6 @@ SOURCES = (
 def is_valid(name, obj):
     if not isinstance(obj, dict):
         return False
-    if name == "results.json":
-        return isinstance(obj.get("races"), dict)
     if name == "early_votes.json":
         return isinstance(obj.get("national"), dict) and isinstance(obj.get("states"), dict)
     return (isinstance(obj.get("ev"), dict)
@@ -48,9 +45,7 @@ def main():
             temp = dst.with_suffix(".tmp")
             temp.write_text(json.dumps(payload, ensure_ascii=False, separators=(",", ":")) + "\n", encoding="utf-8")
             temp.replace(dst)
-            if name == "results.json":
-                detail = f"{len(payload['races'])} races"
-            elif name == "live.json":
+            if name == "live.json":
                 detail = f"{payload['ev']['national'].get('total_ballots_cast', 0)} early ballots"
             else:
                 detail = f"{payload['national'].get('total_ballots_cast', 0)} early ballots"
@@ -58,8 +53,8 @@ def main():
         except Exception as exc:
             failures += 1
             print(f"WARNING {name}: {exc}; keeping prior snapshot", file=sys.stderr)
-    if failures == len(SOURCES) and not all((DATA / name).exists() for name, _ in SOURCES):
-        sys.exit("No valid election or early-voting data available")
+    if failures == len(SOURCES):
+        print("WARNING: early-vote feed unavailable; continuing election-results deployment", file=sys.stderr)
 
 if __name__ == "__main__":
     main()
