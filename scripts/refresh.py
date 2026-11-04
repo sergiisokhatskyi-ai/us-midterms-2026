@@ -14,6 +14,7 @@ DATA.mkdir(exist_ok=True)
 SOURCES = (
     ("results.json", "https://thepeoplestally.com/data/results.json"),
     ("live.json", "https://thepeoplestally.com/api/live"),
+    ("early_votes.json", "https://thepeoplestally.com/data/early_votes.json"),
 )
 
 def is_valid(name, obj):
@@ -21,6 +22,8 @@ def is_valid(name, obj):
         return False
     if name == "results.json":
         return isinstance(obj.get("races"), dict)
+    if name == "early_votes.json":
+        return isinstance(obj.get("national"), dict) and isinstance(obj.get("states"), dict)
     return (isinstance(obj.get("ev"), dict)
             and isinstance(obj["ev"].get("states"), dict)
             and isinstance(obj["ev"].get("national"), dict)
@@ -47,8 +50,10 @@ def main():
             temp.replace(dst)
             if name == "results.json":
                 detail = f"{len(payload['races'])} races"
-            else:
+            elif name == "live.json":
                 detail = f"{payload['ev']['national'].get('total_ballots_cast', 0)} early ballots"
+            else:
+                detail = f"{payload['national'].get('total_ballots_cast', 0)} early ballots"
             print(f"OK {name}: {detail}")
         except Exception as exc:
             failures += 1
