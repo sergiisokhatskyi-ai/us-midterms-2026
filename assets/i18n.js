@@ -3,6 +3,7 @@
 (()=>{'use strict';
 const P=[
 ['ВЫБОРЫ США','ВИБОРИ США','US ELECTIONS'],
+['Подключение к данным…','Підключення до даних…','Connecting to data…'],
 ['Язык интерфейса','Мова інтерфейсу','Interface language'],
 ['3 ноября 2026 · Midterm elections','3 листопада 2026 · Проміжні вибори','November 3, 2026 · Midterm elections'],
 ['Результаты по штатам','Результати за штатами','Results by state'],
@@ -303,4 +304,6 @@ observer=new MutationObserver(records=>{
  }
 });
 observer.observe(document.body,{subtree:true,childList:true,characterData:true,attributes:true,attributeFilter:attributes});
+// Rerender locale-formatted dates and numbers on the first load, too.
+window.dispatchEvent(new CustomEvent('dashboard:languagechange',{detail:{language:lang,selection:chosen}}));
 })();
