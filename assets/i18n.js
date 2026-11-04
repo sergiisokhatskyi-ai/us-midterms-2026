@@ -3,6 +3,7 @@
 (()=>{'use strict';
 const P=[
 ['ВЫБОРЫ США','ВИБОРИ США','US ELECTIONS'],
+['Язык интерфейса','Мова інтерфейсу','Interface language'],
 ['3 ноября 2026 · Midterm elections','3 листопада 2026 · Проміжні вибори','November 3, 2026 · Midterm elections'],
 ['Результаты по штатам','Результати за штатами','Results by state'],
 ['Проценты подсчитанных голосов за демократов и республиканцев. Данные обновляются при открытии страницы и автоматически, пока она открыта.','Частки підрахованих голосів за демократів і республіканців. Дані оновлюються під час відкриття сторінки та автоматично, поки вона відкрита.','Shares of counted votes for Democrats and Republicans. Data refreshes when you open the page and automatically while it remains open.'],
@@ -227,9 +228,15 @@ function translate(text,target){
  }
  let out=text;
  for(const ru of ordered){
-  if(!out.includes(ru))continue;
+  // Match complete Russian words only; do not translate inside another word.
+  if(ru.length<=2||!out.includes(ru))continue;
   const tr=dict.get(ru)[target];
-  if(tr!==undefined&&tr!==ru)out=out.split(ru).join(tr);
+  if(tr===undefined||tr===ru)continue;
+  const isStart=/^[А-Яа-яЁё]/.test(ru),isEnd=/[А-Яа-яЁё]$/.test(ru);
+  const special='\\.^$*+?()[]{}|';
+  const escaped=Array.from(ru).map(c=>special.includes(c)?'\\'+c:c).join('');
+  const re=new RegExp((isStart?'(^|[^А-Яа-яЁё])':'')+escaped+(isEnd?'(?=$|[^А-Яа-яЁё])':''),'gu');
+  out=out.replace(re,(match,leading)=>isStart?leading+tr:tr);
  }
  return out;
 }
