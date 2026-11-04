@@ -20,10 +20,10 @@ SLUGS = [
     "michigan-senate-election-winner",
     "ohio-senate-election-winner",
     "texas-senate-election-winner",
-    "arizona-governor-election-winner",
-    "georgia-governor-election-winner",
-    "nevada-governor-election-winner",
-    "wisconsin-governor-election-winner",
+    "arizona-governor-winner-2026",
+    "georgia-governor-winner-2026",
+    "nevada-governor-winner-2026",
+    "wisconsin-governor-winner-2026",
 ]
 FIELDS = ("id", "groupItemTitle", "question", "outcomes", "outcomePrices", "updatedAt", "closed", "active", "volumeNum")
 
