@@ -130,7 +130,7 @@ function earlyPaint(){
 async function updateEarly(){
  if(state.earlyBusy)return;
  state.earlyBusy=true;
- const sources=[['Прямой источник','https://thepeoplestally.com/api/live'],['Копия GitHub Pages','./data/live.json']];
+ const sources=[['Досрочное голосование','https://thepeoplestally.com/data/early_votes.json'],['Резервная копия бюллетеней','./data/early_votes.json'],['Live API','https://thepeoplestally.com/api/live'],['Live копия','./data/live.json']];
  let reason='';
  try{
   for(const [label,url] of sources){
@@ -140,8 +140,9 @@ async function updateEarly(){
     const res=await fetch(u.toString(),{cache:'no-store',signal:controller.signal,headers:{Accept:'application/json'}});
     if(!res.ok)throw new Error('HTTP '+res.status);
     const doc=await res.json();
-    if(!doc||!doc.ev||!doc.ev.national||!doc.ev.states)throw new Error('Неполный формат');
-    state.early=doc;state.earlyError='';state.earlyChannel=label;earlyPaint();return;
+    const ev=doc?.ev||doc;
+    if(!ev||!ev.national||!ev.states||!Number(ev.national.total_ballots_cast))throw new Error('Нет данных досрочного голосования');
+    state.early={ev};state.earlyError='';state.earlyChannel=label;earlyPaint();return;
    }catch(e){reason=e.name==='AbortError'?'Превышено время ожидания':String(e.message||e)}
    finally{clearTimeout(timeout)}
   }
