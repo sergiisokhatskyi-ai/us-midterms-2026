@@ -22,7 +22,9 @@ jobs:
     steps:
       - name: Checkout site
         uses: actions/checkout@v4
-      - name: Refresh election results from open feed
+      - name: Fetch verified election counts (civicAPI / state authorities)
+        run: python3 scripts/fetch_results.py
+      - name: Refresh early-voting data (optional)
         run: python3 scripts/refresh.py
       - name: Refresh Polymarket odds (read-only Gamma API)
         run: python3 scripts/fetch_polymarket.py
