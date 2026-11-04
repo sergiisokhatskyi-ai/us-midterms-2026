@@ -1,31 +1,60 @@
 #!/usr/bin/env python3
-"""Fetch free election results for GitHub Pages deploy. Never replace valid data with a broken response."""
+"""Refresh 2026 election counts and early-voting statistics for GitHub Pages.
+Preserves last known valid snapshots if a source fails.
+"""
 import json
 import pathlib
 import sys
 import urllib.request
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
-TARGET = ROOT / "data" / "results.json"
-URL = "https://thepeoplestally.com/data/results.json"
+DATA = ROOT / "data"
+DATA.mkdir(exist_ok=True)
 
+SOURCES = (
+    ("results.json", "https://thepeoplestally.com/data/results.json"),
+    ("live.json", "https://thepeoplestally.com/api/live"),
+)
+
+def is_valid(name, obj):
+    if not isinstance(obj, dict):
+        return False
+    if name == "results.json":
+        return isinstance(obj.get("races"), dict)
+    return (isinstance(obj.get("ev"), dict)
+            and isinstance(obj["ev"].get("states"), dict)
+            and isinstance(obj["ev"].get("national"), dict)
+            and isinstance(obj.get("res"), dict))
 
 def main():
-    request = urllib.request.Request(URL, headers={"User-Agent": "Midterms-2026-Dashboard/1.0 (+attribution: thepeoplestally.com)", "Accept": "application/json"})
-    try:
-        with urllib.request.urlopen(request, timeout=25) as response:
-            raw = response.read(20 * 1024 * 1024)
+    failures = 0
+    for name, url in SOURCES:
+        dst = DATA / name
+        request = urllib.request.Request(url, headers={
+            "User-Agent": "USMidtermsDashboard/1.1 (public research dashboard)",
+            "Accept": "application/json",
+        })
+        try:
+            with urllib.request.urlopen(request, timeout=28) as response:
+                raw = response.read(20 * 1024 * 1024 + 1)
+            if len(raw) > 20 * 1024 * 1024:
+                raise ValueError("response exceeds 20 MB")
             payload = json.loads(raw)
-        if not isinstance(payload, dict) or not isinstance(payload.get("races"), dict):
-            raise ValueError("Expected JSON with a 'races' object")
-        TARGET.parent.mkdir(parents=True, exist_ok=True)
-        TARGET.write_text(json.dumps(payload, ensure_ascii=False, separators=(",", ":")) + "\n", encoding="utf-8")
-        print(f"Wrote {TARGET.name}: {len(payload['races'])} races, source generated_at={payload.get('generated_at')}")
-    except Exception as exc:
-        print(f"WARNING: source unavailable ({exc}); keeping last verified snapshot.", file=sys.stderr)
-        if not TARGET.exists():
-            sys.exit(1)
-
+            if not is_valid(name, payload):
+                raise ValueError("unexpected JSON structure")
+            temp = dst.with_suffix(".tmp")
+            temp.write_text(json.dumps(payload, ensure_ascii=False, separators=(",", ":")) + "\n", encoding="utf-8")
+            temp.replace(dst)
+            if name == "results.json":
+                detail = f"{len(payload['races'])} races"
+            else:
+                detail = f"{payload['ev']['national'].get('total_ballots_cast', 0)} early ballots"
+            print(f"OK {name}: {detail}")
+        except Exception as exc:
+            failures += 1
+            print(f"WARNING {name}: {exc}; keeping prior snapshot", file=sys.stderr)
+    if failures == len(SOURCES) and not all((DATA / name).exists() for name, _ in SOURCES):
+        sys.exit("No valid election or early-voting data available")
 
 if __name__ == "__main__":
     main()
