@@ -12,10 +12,10 @@ const cfg=[
 ['MI','Мичиган · Сенат','michigan-senate-election-winner'],
 ['OH','Огайо · Сенат','ohio-senate-election-winner'],
 ['TX','Техас · Сенат','texas-senate-election-winner'],
-['AZ','Аризона · губернатор','arizona-governor-election-winner'],
-['GA','Джорджия · губернатор','georgia-governor-election-winner'],
-['NV','Невада · губернатор','nevada-governor-election-winner'],
-['WI','Висконсин · губернатор','wisconsin-governor-election-winner']
+['AZ','Аризона · губернатор','arizona-governor-winner-2026'],
+['GA','Джорджия · губернатор','georgia-governor-winner-2026'],
+['NV','Невада · губернатор','nevada-governor-winner-2026'],
+['WI','Висконсин · губернатор','wisconsin-governor-winner-2026']
 ];
 const events=new Map();let busy=false,lastCheck=0,liveCount=0,stamp='';
 function esc(x){return String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
