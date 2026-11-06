@@ -7,7 +7,7 @@ on:
     # UTC. GitHub may delay scheduled workflows; interval is not a real-time SLA.
     - cron: '7-59/5 * * * *'
 permissions:
-  contents: read
+  contents: write
   pages: write
   id-token: write
 concurrency:
@@ -24,6 +24,20 @@ jobs:
         uses: actions/checkout@v4
       - name: Fetch verified election counts (civicAPI / state authorities)
         run: python3 scripts/fetch_results.py
+      - name: Save latest verified snapshot to repository
+        # Normalized, validated live results only (empty feeds never overwrite data).
+        # GitHub Actions bot commits do not retrigger this workflow.
+        continue-on-error: true
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/results.json
+          if ! git diff --cached --quiet; then
+            git commit -m "Update verified 2026 election results [skip ci]"
+            git push origin HEAD:main
+          else
+            echo "No changed election vote totals"
+          fi
       - name: Refresh early-voting data (optional)
         run: python3 scripts/refresh.py
       - name: Refresh Polymarket odds (read-only Gamma API)
