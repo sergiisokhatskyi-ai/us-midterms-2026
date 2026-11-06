@@ -13,6 +13,7 @@ import urllib.parse
 import urllib.request
 
 OUT = pathlib.Path(__file__).resolve().parents[1] / "data" / "results.json"
+STATUS = OUT.parent / "source-status.json"
 PRIMARY = "https://sitmap.live/api/elections/us-2026.json"
 SECONDARY = "https://openamerica.io/elections/results.json?year=2026&office="
 STATES = set("AL AK AZ AR CA CO CT DE FL GA HI ID IL IN IA KS KY LA ME MD MA MI MN MS MO MT NE NV NH NJ NM NY NC ND OH OK OR PA RI SC SD TN TX UT VT VA WA WV WI WY".split())
@@ -207,6 +208,22 @@ def main():
         print("WROTE", OUT.name, result["generated_at"])
     else:
         print("WARNING: No new valid vote totals; retaining last good snapshot.", errors, file=sys.stderr)
+
+    status_document = {
+        "checked_at": dt.datetime.now(dt.timezone.utc).isoformat(),
+        "status": "fresh" if result and has_votes(result) else ("stale" if old and has_votes(old) else "empty"),
+        "source": (result or old or {}).get("source"),
+        "races": len((result or old or {}).get("races", {})),
+        "with_votes": sum(1 for race in (result or old or {}).get("races", {}).values()
+                          if any(int(c.get("votes") or 0)>0 for c in race.get("cands", []))),
+        "generated_at": (result or old or {}).get("generated_at"),
+        "coverage": (result or old or {}).get("coverage"),
+        "errors": errors,
+        "note": "Provisional reported votes; not certified. State with no race is not missing data."
+    }
+    STATUS.parent.mkdir(parents=True, exist_ok=True)
+    STATUS.write_text(json.dumps(status_document, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    print("SOURCE_STATUS", status_document["status"], status_document["races"], status_document["with_votes"])
 
 
 if __name__ == "__main__":
