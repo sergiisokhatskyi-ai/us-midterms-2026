@@ -36,13 +36,14 @@
 
     .lang-select{max-width:120px;min-width:87px;background:#fff;color:var(--ink);border:1px solid #dbe1ed;border-radius:9px;padding:7px 7px;font-weight:750;font-size:12px;cursor:pointer}.lang-select:focus-visible{outline:2px solid var(--blue)}.topbar .container{flex-wrap:wrap;row-gap:5px}html[lang="en"] .state-names .en{display:none}
     @media(max-width:590px){.top-meta{flex-wrap:wrap;justify-content:flex-end}.lang-select{max-width:107px;font-size:11px;padding:6px}.version{display:none}}
+    .data-health{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;padding:13px 15px;border:1px solid #d7e2ee;border-radius:12px;background:#f7fafc;margin-bottom:15px;font-size:12px;color:#344054}.data-health small{display:block;margin-top:4px;color:#64748b}.data-health button{background:#fff;border:1px solid #bdcde7;color:#1e40af;border-radius:10px;padding:8px 12px;font-size:12px;font-weight:750}.tile.no-election{background:repeating-linear-gradient(135deg,#f1f2f4 0px,#f1f2f4 4px,#d4dbe5 4px,#d4dbe5 5px)!important;border:1px dashed #a6aebb!important;color:#738294;opacity:.72}.swatch.not-held{background:repeating-linear-gradient(135deg,#f1f2f4 0px,#f1f2f4 3px,#cbd5e1 3px,#cbd5e1 4px);border:1px dashed #a6aebb}.data-health strong{font-weight:780}
   </style>
 </head>
 <body>
-<header class="topbar"><div class="container"><div class="brand">🇺🇸 ВЫБОРЫ США <span>2026</span> <span class="version">v4 · Live results</span></div><div class="top-meta"><select id="languageSelect" class="lang-select" aria-label="Язык интерфейса" title="Язык интерфейса"><option value="auto">🌐 Auto</option><option value="uk">Українська</option><option value="ru">Русский</option><option value="en">English</option></select><span class="live-dot" id="liveDot"></span><span id="topStatus">Подключение к данным…</span></div></div></header>
+<header class="topbar"><div class="container"><div class="brand">🇺🇸 ВЫБОРЫ США <span>2026</span> <span class="version">v5 · 50 states</span></div><div class="top-meta"><select id="languageSelect" class="lang-select" aria-label="Язык интерфейса" title="Язык интерфейса"><option value="auto">🌐 Auto</option><option value="uk">Українська</option><option value="ru">Русский</option><option value="en">English</option></select><span class="live-dot" id="liveDot"></span><span id="topStatus">Подключение к данным…</span></div></div></header>
 <main class="container">
   <section class="hero"><div><div class="eyebrow">3 ноября 2026 · Midterm elections</div><h1>Результаты по штатам</h1><p class="subtitle">Проценты подсчитанных голосов за демократов и республиканцев. Данные обновляются при открытии страницы и автоматически, пока она открыта.</p></div><button class="refresh-button" id="refreshBtn" type="button" aria-label="Обновить результаты"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20 7v5h-5M4 17v-5h5"/><path d="M5.6 9A7 7 0 0 1 18.6 7L20 12M4 12l1.4 5a7 7 0 0 0 13-2"/></svg>Обновить</button></section>
-  <nav class="tabs" aria-label="Тип выборов"><button type="button" class="tab active" data-office="senate" aria-pressed="true">Сенат <span class="count">35 гонок</span></button><button type="button" class="tab" data-office="house" aria-pressed="false">Палата представителей <span class="count">435 округов</span></button><button type="button" class="tab" data-office="governor" aria-pressed="false">Губернаторы <span class="count">36 гонок</span></button></nav>
+  <nav class="tabs" aria-label="Тип выборов"><button type="button" class="tab active" data-office="house" aria-pressed="true">Все 50 штатов · Палата представителей <span class="count">435 округов</span></button><button type="button" class="tab" data-office="senate" aria-pressed="false">Сенат <span class="count">35 гонок</span></button><button type="button" class="tab" data-office="governor" aria-pressed="false">Губернаторы <span class="count">36 гонок</span></button></nav>
   <section class="panel pm-panel" id="polymarket" aria-label="Котировки Polymarket">
     <div class="pm-head"><div><h2>Polymarket — рыночные вероятности</h2><p>Сенат, Палата представителей и ключевые выборы по штатам · котировки с автоматическим обновлением</p></div><button id="pmRefresh" type="button" class="pm-refresh">↻ Обновить</button></div>
     <div class="pm-status" id="pmStatus" role="status">Подключение к Polymarket…</div>
@@ -53,6 +54,7 @@
   </section>
   <section class="metrics" aria-label="Ключевые показатели"><div class="metric"><div class="metric-label">Подсчитанные голоса</div><div class="metric-value" id="voteTotal">—</div><div class="metric-note" id="voteScope">В выбранной категории</div></div><div class="metric blue"><div class="metric-label">Демократы</div><div class="metric-value" id="demTotal">—</div><div class="metric-note" id="demVotes">Нет опубликованных голосов</div></div><div class="metric red"><div class="metric-label">Республиканцы</div><div class="metric-value" id="repTotal">—</div><div class="metric-note" id="repVotes">Нет опубликованных голосов</div></div><div class="metric"><div class="metric-label">Штатов с подсчётом</div><div class="metric-value" id="statesTotal">0 / 35</div><div class="metric-note" id="racesTotal">Гонки с опубликованными результатами</div></div></section>
   <div id="status" class="status" role="status" aria-live="polite"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 7h.01"/></svg><span>Проверка источника результатов…</span></div>
+  <div id="dataHealth" class="data-health" role="status" aria-live="polite"><div><strong id="healthSummary">Загрузка карты всех 50 штатов…</strong><small id="healthServer">Проверка серверного обновления…</small></div><button id="showAllStates" type="button">Показать все 50 штатов</button></div>
   <section class="panel early-panel" id="earlyPanel" aria-label="Статистика досрочного голосования">
     <div class="panel-head"><div><h2>Досрочное голосование</h2><p>Опубликованные данные о количестве уже поданных бюллетеней — не подсчёт за партии</p></div><div class="early-badge" id="earlyTime">Загрузка…</div></div>
     <div class="early-layout">
@@ -63,13 +65,13 @@
     <p class="early-explainer" id="earlySummary">Получаем статистику досрочного голосования. Она обновляется отдельно от результатов выборов.</p>
     <details class="early-details"><summary>Статистика досрочного голосования по 50 штатам</summary><div style="overflow-x:auto"><table class="early-table"><thead><tr><th>Штат</th><th>Бюллетени</th><th>Рег. D</th><th>Рег. R</th></tr></thead><tbody id="earlyRows"></tbody></table></div><p class="early-footnote">Рег. D/R — партия, с которой зарегистрирован избиратель, если штат публикует эти сведения. Это НЕ голоса за кандидатов. Пустая ячейка — нет данных. Суммы категорий разных штатов могут не совпадать с национальным итогом.</p></details>
   </section>
-  <section class="main-grid"><div class="panel"><div class="panel-head"><div><h2>Карта США</h2><p id="mapSubtitle">Выберите штат, чтобы посмотреть подробности</p></div><div class="panel-kicker">50 штатов</div></div><div class="tile-map" id="tileMap" role="group" aria-label="Интерактивная карта штатов США"></div><div class="legend"><span class="legend-item"><i class="swatch dem"></i>Лидирует D</span><span class="legend-item"><i class="swatch rep"></i>Лидирует R</span><span class="legend-item"><i class="swatch tie"></i>Равенство</span><span class="legend-item"><i class="swatch none"></i>Нет данных / выборов</span></div><p class="map-note">Цвет отражает только текущее лидерство по опубликованным голосам, а не прогноз победы. Аляска и Гавайи показаны отдельно.</p></div>
+  <section class="main-grid"><div class="panel"><div class="panel-head"><div><h2>Карта США</h2><p id="mapSubtitle">Выберите штат, чтобы посмотреть подробности</p></div><div class="panel-kicker">50 штатов</div></div><div class="tile-map" id="tileMap" role="group" aria-label="Интерактивная карта штатов США"></div><div class="legend"><span class="legend-item"><i class="swatch dem"></i>Лидирует D</span><span class="legend-item"><i class="swatch rep"></i>Лидирует R</span><span class="legend-item"><i class="swatch tie"></i>Равенство</span><span class="legend-item"><i class="swatch none"></i>Нет опубликованных голосов</span><span class="legend-item"><i class="swatch not-held"></i>Выборов нет</span></div><p class="map-note">Цвет отражает только текущее лидерство по опубликованным голосам, а не прогноз победы. Аляска и Гавайи показаны отдельно.</p></div>
   <div class="panel rightpanel"><div><div class="panel-head"><div><h2>Доли голосов</h2><p>Только уже опубликованные результаты</p></div></div><div class="mini-heading">Голосование в выбранной категории</div><div class="breakdown"><span class="d" id="sideDem">D —</span><span class="r" id="sideRep">R —</span></div><div class="bar-split" role="img" aria-label="Соотношение голосов" id="nationalBar"><span class="d" style="width:0"></span><span class="r" style="width:0"></span><span class="other" style="width:100%"></span></div><p class="explain" style="margin-top:11px">Учитываются только гонки и кандидаты, по которым опубликованы голоса. Это <strong>не</strong> общенациональный опрос и не распределение мест в Конгрессе.</p></div><div class="divider"></div><div><div class="mini-heading" style="margin-bottom:10px">Обновление и прозрачность</div><div class="notes-list"><p><strong>Последняя проверка:</strong> <span id="checkedTime">—</span></p><p><strong>Время данных:</strong> <span id="dataTime">—</span></p><p><strong>Канал:</strong> <span id="sourceMode">—</span></p><p><strong>Состояние:</strong> <span id="dataStatus">Нет данных</span></p></div></div><div class="divider"></div><div><div class="mini-heading">Источники</div><div class="link-line"><span>Обновляемый источник результатов</span><a href="https://sitmap.live/api/elections/us-2026.json" target="_blank" rel="noopener noreferrer">civicAPI / Sitmap JSON ↗</a></div><div class="link-line"><span>Как читать результаты</span><a href="https://www.ap.org/elections/" target="_blank" rel="noopener noreferrer">Associated Press ↗</a></div></div></div></section>
   <section class="panel states-panel" id="states"><div class="states-head"><div><h2>Разбивка по штатам</h2><p class="subtitle" id="listSubtitle" style="margin-top:5px">Проценты от опубликованных голосов в данном штате</p></div><div class="filters"><input id="search" class="search" placeholder="Поиск штата…" aria-label="Поиск штата"><select id="filter" class="filter" aria-label="Фильтр результатов"><option value="all">Все штаты</option><option value="reporting">С подсчётом</option><option value="close">Разрыв менее 5 п.п.</option><option value="no-data">Без результатов</option></select></div></div><div class="state-list" id="stateList"></div></section>
 </main>
 <footer class="container foot"><p><strong>Важное уточнение:</strong> на 3 ноября 2026 года подсчёт начинается после закрытия участков. Отсутствие цифр означает отсутствие опубликованных данных, а не 0% поддержки партии. Досрочное голосование и партийная регистрация не считаются голосами за кандидатов.</p><p>Обновление при каждом открытии, возвращении на вкладку и далее каждые 60 секунд. Зеркало для GitHub Pages может обновляться с задержкой (обычно от 5 минут, иногда дольше). Данные не сертифицированы до утверждения результатов штатами.</p><p>Источник опубликованных, но ещё не заверенных голосов: <a href="https://sitmap.live/elections/us-2026" target="_blank" rel="noopener noreferrer">civicAPI через Sitmap</a>. Резерв: <a href="https://openamerica.io/elections/api/" target="_blank" rel="noopener noreferrer">Open America</a> (22 штата). Объявление победителя civicAPI — не официальная сертификация. Polymarket показывает рыночные вероятности, а не голоса.</p><div class="foot-links"><a href="https://sitmap.live/api/elections/us-2026.json" target="_blank" rel="noopener noreferrer">Проверить JSON с результатами ↗</a><a href="#states">Перейти к штатам ↑</a></div></footer>
 <dialog id="stateDialog" aria-labelledby="dialogTitle"><div class="dialog-inner"><div class="dialog-head"><div><div class="eyebrow" id="dialogCode">Штат</div><h2 id="dialogTitle">Данные штата</h2><p class="low" id="dialogSubtitle">—</p></div><button class="dialog-close" type="button" id="dialogClose" aria-label="Закрыть">×</button></div><div id="dialogContent"></div></div></dialog>
-<script src="assets/results-source.js?v=20261104e"></script>
+<script src="assets/results-source.js?v=20261106b"></script>
 <script>
 (()=>{'use strict';
 const ALL=[
@@ -78,7 +80,7 @@ const ALL=[
 const S=new Set('AL AK AR CO DE FL GA ID IL IA KS KY LA ME MA MI MN MS MT NE NH NJ NM NC OH OK OR RI SC SD TN TX VA WV WY'.split(' '));
 const G=new Set('AL AK AZ AR CA CO CT FL GA HI ID IL IA KS ME MD MA MI MN NE NV NH NM NY OH OK OR PA RI SC SD TN TX VT WI WY'.split(' '));
 const officeNames={senate:'Сенат США',house:'Палата представителей',governor:'Губернатор'};
-const state={office:'senate',data:null,channel:'',success:false,error:'',lastRead:null,search:'',filter:'all',busy:false,lastFetchMs:0};
+const state={office:'house',data:null,channel:'',success:false,error:'',lastRead:null,search:'',filter:'all',busy:false,lastFetchMs:0};
 const $=id=>document.getElementById(id);const locale=()=>({ru:'ru-RU',uk:'uk-UA',en:'en-GB'}[document.documentElement.lang]||'en-GB');const num=n=>Intl.NumberFormat(locale(),{maximumFractionDigits:0}).format(n||0);const pct=n=>Number.isFinite(n)?Intl.NumberFormat(locale(),{minimumFractionDigits:1,maximumFractionDigits:1}).format(n)+'%':'—';
 const human=n=>{const language=document.documentElement.lang;const f=x=>Intl.NumberFormat(locale(),{maximumFractionDigits:2}).format(x);return n>=1e6?f(n/1e6)+(language==='en'?'M':' млн'):n>=1e3?f(n/1e3)+(language==='en'?'K':' тыс.'):num(n)};
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -98,7 +100,11 @@ $('voteTotal').textContent=z.total?human(z.total):'—';$('demTotal').textConten
 $('mapSubtitle').textContent=z.states?`${z.states} штатов уже публикуют подсчёт · нажмите на штат`:'Голоса за партии ещё не опубликованы. Ниже доступна статистика досрочного голосования.';
 $('listSubtitle').textContent=state.office==='house'?'Общая доля голосов в опубликованных гонках по округам штата':'Проценты от опубликованных голосов в соответствующей гонке';
 for(const b of document.querySelectorAll('.tab')){const active=b.dataset.office===state.office;b.classList.toggle('active',active);b.setAttribute('aria-pressed',String(active))}
-renderMap();renderList();renderStatus()}
+const missing=ALL.filter(([st])=>!isContested(st)).length;
+ const noVotes=ALL.filter(([st])=>isContested(st)&&agg(st).total===0).length;
+ $('healthSummary').textContent='Данные: '+z.states+' из '+n+' штатов с подсчётом · '+missing+' без выборов в категории · '+noVotes+' без голосов источника';
+ $('showAllStates').hidden=state.office==='house';
+ renderMap();renderList();renderStatus()}
 function renderMap(){const el=$('tileMap');const fragment=document.createDocumentFragment();ALL.forEach(([code,ru,en,row,col])=>{const b=document.createElement('button');b.type='button';b.textContent=code;const a=agg(code);b.className='tile '+lead(a)+(a.contested?'':' no-election');b.style.gridRow=(code==='AK'?8:code==='HI'?9:8-row);b.style.gridColumn=(code==='AK'?1:code==='HI'?2:col+1);b.title=`${ru}: ${a.total?'D '+pct(a.d/a.total*100)+', R '+pct(a.r/a.total*100):a.contested?'нет опубликованных результатов':'нет этой гонки'}`;b.setAttribute('aria-label',b.title);b.onclick=()=>showState(code);fragment.append(b)});el.replaceChildren(fragment)}
 function renderList(){const query=state.search.trim().toLowerCase();let rows=ALL.map(([code,ru,en])=>({code,ru,en,a:agg(code)})).filter(x=>(!query||[x.code,x.ru,x.en,window.dashboardTranslate?.(x.ru)||x.ru].some(s=>s.toLowerCase().includes(query)))).filter(x=>state.filter==='reporting'?x.a.total>0:state.filter==='close'?x.a.total>0&&Math.abs(x.a.d-x.a.r)/x.a.total<.05:state.filter==='no-data'?x.a.total===0:true);
 rows.sort((x,y)=>Number(y.a.total>0)-Number(x.a.total>0)||Number(y.a.contested)-Number(x.a.contested)||(window.dashboardTranslate?.(x.ru)||x.ru).localeCompare(window.dashboardTranslate?.(y.ru)||y.ru,locale()));
@@ -136,6 +142,27 @@ async function update(){
  }
 }
 
+
+async function loadServerStatus(){
+ const target=$('healthServer');
+ try{
+  const url=new URL('./data/source-status.json',location.href);
+  url.searchParams.set('_',String(Date.now()));
+  const controller=new AbortController(), timer=setTimeout(()=>controller.abort(),7000);
+  let response;
+  try{response=await fetch(url,{cache:'no-store',signal:controller.signal})}
+  finally{clearTimeout(timer)}
+  if(!response.ok)throw Error('HTTP '+response.status);
+  const s=await response.json();
+  if(!s||!s.checked_at||!['fresh','stale','empty'].includes(s.status))throw Error('Неверный статус');
+  const status={fresh:'Успешно получены данные',stale:'Показана устаревшая копия',empty:'Новых голосов нет'}[s.status];
+  const date=new Date(s.checked_at);
+  const stamp=Number.isFinite(date.getTime())?new Intl.DateTimeFormat(document.documentElement.lang||'ru',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit',timeZone:'Europe/London'}).format(date):s.checked_at;
+  target.textContent='GitHub Actions · '+status+' · проверка '+stamp+' · '+(s.with_votes||0)+' гонок с голосами';
+ }catch(e){
+  target.textContent='GitHub Actions: проверить опубликованную резервную копию не удалось ('+String(e.message||e)+')';
+ }
+}
 function earlyPaint(){
  const ev=state.early?.ev||null, n=ev?.national||{}, states=ev?.states||{};
  const ok=Number.isFinite(Number(n.total_ballots_cast))&&Number(n.total_ballots_cast)>0;
@@ -176,10 +203,11 @@ async function updateEarly(){
  }finally{state.earlyBusy=false}
 }
 
-$('refreshBtn').onclick=()=>{update();updateEarly()};$('search').addEventListener('input',e=>{state.search=e.target.value;renderList()});$('filter').addEventListener('change',e=>{state.filter=e.target.value;renderList()});document.querySelectorAll('[data-office]').forEach(b=>b.addEventListener('click',()=>{state.office=b.dataset.office;refreshUI()}));$('dialogClose').onclick=()=>$('stateDialog').close();$('stateDialog').onclick=e=>{if(e.target===$('stateDialog'))$('stateDialog').close()};document.addEventListener('visibilitychange',()=>{if(!document.hidden&&Date.now()-state.lastFetchMs>30*1000){update();updateEarly()}});window.addEventListener('pageshow',e=>{if(e.persisted&&Date.now()-state.lastFetchMs>30*1000){update();updateEarly()}});setInterval(()=>{if(!document.hidden&&Date.now()-state.lastFetchMs>=60*1000){update();updateEarly()}},60*1000);window.addEventListener('dashboard:languagechange',()=>{refreshUI();earlyPaint()});refreshUI();earlyPaint();update();updateEarly();
+$('refreshBtn').onclick=()=>{update();updateEarly();loadServerStatus()};
+$('showAllStates').onclick=()=>{state.office='house';refreshUI();$('tileMap').scrollIntoView({block:'center',behavior:'smooth'})};$('search').addEventListener('input',e=>{state.search=e.target.value;renderList()});$('filter').addEventListener('change',e=>{state.filter=e.target.value;renderList()});document.querySelectorAll('[data-office]').forEach(b=>b.addEventListener('click',()=>{state.office=b.dataset.office;refreshUI()}));$('dialogClose').onclick=()=>$('stateDialog').close();$('stateDialog').onclick=e=>{if(e.target===$('stateDialog'))$('stateDialog').close()};document.addEventListener('visibilitychange',()=>{if(!document.hidden&&Date.now()-state.lastFetchMs>30*1000){update();updateEarly()}});window.addEventListener('pageshow',e=>{if(e.persisted&&Date.now()-state.lastFetchMs>30*1000){update();updateEarly()}});setInterval(()=>{if(!document.hidden&&Date.now()-state.lastFetchMs>=60*1000){update();updateEarly();loadServerStatus()}},60*1000);window.addEventListener('dashboard:languagechange',()=>{refreshUI();earlyPaint()});refreshUI();earlyPaint();update();updateEarly();loadServerStatus();
 })();
 </script>
-<script src="assets/i18n.js?v=20261104e"></script>
-<script src="assets/markets.js?v=20261104e" defer></script>
+<script src="assets/i18n.js?v=20261106b"></script>
+<script src="assets/markets.js?v=20261106b" defer></script>
 </body>
 </html>
