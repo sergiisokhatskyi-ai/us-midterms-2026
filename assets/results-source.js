@@ -77,23 +77,41 @@ async function get(url,ms=8500){
  }finally{clearTimeout(timer)}
 }
 async function load(){
- const issues=[];
- try{const v=sitmap(await get(SOURCE,9000));return {data:v,channel:'civicAPI · Sitmap (LIVE)'}}catch(e){issues.push('civicAPI: '+e.message)}
- try{
-  const json=await get('./data/results.json',6500);
-  if(json?.races&&Object.values(json.races).some(r=>(r.cands||r.candidates||[]).some(c=>Number(c.votes??c.v??0)>0))){
-   return {data:json,channel:'civicAPI / Open America · GitHub Pages (резервная копия)'};
-  }
- }catch(e){issues.push('GitHub Pages: '+e.message)}
+ // Check the current live feed and the published GitHub Pages mirror in parallel.
+ // This avoids blocking the map when cross-origin requests are disallowed.
+ const checks=await Promise.allSettled([
+  (async()=>({data:sitmap(await get(SOURCE,7500)),channel:'civicAPI · Sitmap (LIVE)'}))(),
+  (async()=>{
+    const data=await get('./data/results.json',6500);
+    const races=data?.races;
+    const withVotes=races&&typeof races==='object'?Object.values(races).filter(r=>(r.cands||r.candidates||[]).some(c=>Number(c.votes??c.v??0)>0)).length:0;
+    if(withVotes<1)throw Error('Резервная копия без голосов');
+    return {data:{...data,coverage:data.coverage||{withVotes,races:Object.keys(races).length,scope:'не уточнено'}},channel:'GitHub Pages · резервная копия'};
+  })()
+ ]);
+ const valid=checks.filter(x=>x.status==='fulfilled').map(x=>x.value);
+ const issues=checks.filter(x=>x.status==='rejected').map(x=>String(x.reason?.message||x.reason));
+ if(valid.length){
+  // Prefer a current full-coverage feed over an older or 22-state partial snapshot.
+  valid.sort((a,b)=>{
+   const score=x=>Number(x.data?.coverage?.withVotes||0);
+   const gap=score(b)-score(a);
+   if(Math.abs(gap)>20)return gap;
+   return (Date.parse(b.data?.coverage?.sourceUpdated||b.data?.generated_at)||0)
+       -(Date.parse(a.data?.coverage?.sourceUpdated||a.data?.generated_at)||0);
+  });
+  return {...valid[0],diagnostics:{success:true,checks:valid.length,issues}};
+ }
  try{
   const values=await Promise.allSettled(['senate','house','governor'].map(async office=>{
-   const d=await get(OFFICIAL+'?year=2026&office='+office,9000);
+   const d=await get(OFFICIAL+'?year=2026&office='+office,7500);
    return [office,d];
   }));
   const feeds=Object.fromEntries(values.filter(x=>x.status==='fulfilled').map(x=>x.value));
-  const v=openamerica(feeds);return {data:v,channel:'Open America · источники штатов (22/50)'};
- }catch(e){issues.push('Open America: '+e.message)}
- throw Error('Источники пока недоступны: '+issues.join('; '));
+  const data=openamerica(feeds);
+  return {data,channel:'Open America · 22 штата (неполное покрытие)',diagnostics:{success:true,issues,partial:true}};
+ }catch(e){issues.push('Open America: '+(e?.message||e))}
+ throw Error('Ни один источник не вернул подсчитанные голоса: '+issues.join('; '));
 }
 root.ElectionResultsSource={sitmap,openamerica,load,source:SOURCE};
 })(window);
